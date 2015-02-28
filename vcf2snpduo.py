@@ -39,10 +39,11 @@ if __name__ == "__main__":
 	parser.add_argument( "input_vcf", help="VCF file to be processed" )
 	parser.add_argument( "--minDepth", help="Minimum depth for individual samples", type=int, default=10, dest="minDepth" )
 	parser.add_argument( "--minSampleCount", help="Minimum number of samples retained for a variant to print", type=int, default=1, dest="minCount" )
+	parser.add_argument( "--filterDP", help="Default is filtering by individual Allele Depth. This option switches the filter to individual level DP. If neither are present, this tool isn't appropriate.", default=True, action='store_false', dest='filterByAD' )
 
 	args = parser.parse_args()
 
-	log_msg( "Minimum Depth: %s\nMinimum Samples: %s\n" % ( args.minDepth, args.minCount ) )
+	log_msg( "Minimum Depth: %s\nMinimum Samples: %s\nDepth filter field: %s" % ( args.minDepth, args.minCount, "AD" if args.filterByAD else "DP" ) )
 
 	#####################
 	# open file handles #
@@ -99,18 +100,22 @@ if __name__ == "__main__":
 			continue
 		
 		GTndx = None
-		DPndx = None
+		DP_AD_ndx = None
 		
 		lineGenoFormat = lineVals[ colOrder['FORMAT'] ].split( ':' )
 		
 		for ndx in range( len( lineGenoFormat ) ):
 			if lineGenoFormat[ndx] == "GT":
 				GTndx = ndx
-			elif lineGenoFormat[ndx] == "DP":
-				DPndx = ndx
+			elif lineGenoFormat[ndx] == "AD" and args.filterByAD:
+				DP_AD_ndx = ndx
+			elif lineGenoFormat[ndx] == "DP" and not args.filterByAD:
+				DP_AD_ndx = ndx
 		
-		if GTndx == None or DPndx == None:
-			error_msg( "GT field or DP field missing" )
+		if GTndx == None:
+			error_msg( "GT field missing. Is this a sites file???" )
+		elif DP_AD_ndx == None:
+			error_msg( "You are filtering by individual sample %s field, but it wasn't found. Try filtering by %s instead?" % ( "AD" if args.filterByAD else "DP", "DP" if args.filterByAD else "AD" ) )
 		
 		genotypeArray = []
 		
@@ -123,7 +128,7 @@ if __name__ == "__main__":
 				genotypeArray.append( "NC" )
 			else:
 				try:
-					depthValues = sampleValues[DPndx].split( ',' )
+					depthValues = sampleValues[DP_AD_ndx].split( ',' )
 					depthCounts = [ int( val ) for val in depthValues ]
 				except:
 					genotypeArray.append( 'NC' )
