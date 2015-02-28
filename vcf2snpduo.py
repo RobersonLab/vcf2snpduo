@@ -31,6 +31,13 @@ def genotype_conversion( genotype ):
 	return( "NC" )
 
 if __name__ == "__main__":
+	####################
+	# Version and name #
+	####################
+	SCRIPT_PATH = sys.argv[0]
+	SCRIPT_NAME = SCRIPT_PATH.split( '/' )[-1].split( '\\' )[-1]
+	VERSION = '1.0.1'
+	
 	#############
 	# arg parse #
 	#############
@@ -40,10 +47,11 @@ if __name__ == "__main__":
 	parser.add_argument( "--minDepth", help="Minimum depth for individual samples", type=int, default=10, dest="minDepth" )
 	parser.add_argument( "--minSampleCount", help="Minimum number of samples retained for a variant to print", type=int, default=1, dest="minCount" )
 	parser.add_argument( "--filterDP", help="Default is filtering by individual Allele Depth. This option switches the filter to individual level DP. If neither are present, this tool isn't appropriate.", default=True, action='store_false', dest='filterByAD' )
+	parser.add_argument( '--version', action='version', version="v%s" % ( VERSION ) )
 
 	args = parser.parse_args()
 
-	log_msg( "Minimum Depth: %s\nMinimum Samples: %s\nDepth filter field: %s" % ( args.minDepth, args.minCount, "AD" if args.filterByAD else "DP" ) )
+	log_msg( "%s v%s\nMinimum Depth: %s\nMinimum Samples: %s\nDepth filter field: %s" % ( SCRIPT_NAME, VERSION, args.minDepth, args.minCount, "AD" if args.filterByAD else "DP" ) )
 
 	#####################
 	# open file handles #
