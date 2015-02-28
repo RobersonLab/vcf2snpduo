@@ -7,9 +7,17 @@ The [SNPduo](http://github.com/RobersonLab/snpduoweb) web-based tool is capable 
 ## Basic usage
 
 ### Run example
+Filter by AD
 ```bash
 python vcf2snpduo.py --minDepth 20 --minSampleCount 4 myInput.vcf 1>custom_duo_format.csv 2>duo.log
 ```
+
+Filter by DP
+```bash
+python vcf2snpduo.py --minDepth 20 --minSampleCount 4 --filterDP myInput.vcf 1>custom_duo_format.csv 2>duo.log
+```
+
+**Important note** The depth filtering for this tool uses the *individual* level data, i.e. the DP field in INFO for all samples at a site is not used. Not all VCF files have allele depth (AD) and depth (DP) per sample, so choose whichever your sample has.
 
 ### Running in SNPduo
 Follow instructions for the SNPduo repository if you aren't running the tool via the [Pevsner lab](http://pevsnerlab.kennedykrieger.org/SNPduo/) web-interface. Choose CSV delimiting character and Custom Data Format.
