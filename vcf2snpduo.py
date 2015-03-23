@@ -36,7 +36,7 @@ if __name__ == "__main__":
 	####################
 	SCRIPT_PATH = sys.argv[0]
 	SCRIPT_NAME = SCRIPT_PATH.split( '/' )[-1].split( '\\' )[-1]
-	VERSION = '1.0.1'
+	VERSION = '1.0.2'
 	
 	#############
 	# arg parse #
@@ -47,11 +47,12 @@ if __name__ == "__main__":
 	parser.add_argument( "--minDepth", help="Minimum depth for individual samples", type=int, default=10, dest="minDepth" )
 	parser.add_argument( "--minSampleCount", help="Minimum number of samples retained for a variant to print", type=int, default=1, dest="minCount" )
 	parser.add_argument( "--filterDP", help="Default is filtering by individual Allele Depth. This option switches the filter to individual level DP. If neither are present, this tool isn't appropriate.", default=True, action='store_false', dest='filterByAD' )
+	parser.add_argument( "--noDepthFilter", help="Default is allele depth (AD) filtering, with depth (DP) option. This option removes all depth filtering", default=False, action='store_true', dest='noFilter' )
 	parser.add_argument( '--version', action='version', version="v%s" % ( VERSION ) )
 
 	args = parser.parse_args()
 
-	log_msg( "%s v%s\nMinimum Depth: %s\nMinimum Samples: %s\nDepth filter field: %s" % ( SCRIPT_NAME, VERSION, args.minDepth, args.minCount, "AD" if args.filterByAD else "DP" ) )
+	log_msg( "%s v%s\nMinimum Depth: %s\nMinimum Samples: %s\nDepth filter field: %s" % ( SCRIPT_NAME, VERSION, args.minDepth, args.minCount, "None" if args.noFilter else "AD" if args.filterByAD else "DP" ) )
 
 	#####################
 	# open file handles #
@@ -122,7 +123,7 @@ if __name__ == "__main__":
 		
 		if GTndx == None:
 			error_msg( "GT field missing. Is this a sites file???" )
-		elif DP_AD_ndx == None:
+		elif DP_AD_ndx == None and not args.noFilter:
 			error_msg( "You are filtering by individual sample %s field, but it wasn't found. Try filtering by %s instead?" % ( "AD" if args.filterByAD else "DP", "DP" if args.filterByAD else "AD" ) )
 		
 		genotypeArray = []
@@ -135,14 +136,15 @@ if __name__ == "__main__":
 			if genotype == "./." or genotype == ".|.":
 				genotypeArray.append( "NC" )
 			else:
-				try:
-					depthValues = sampleValues[DP_AD_ndx].split( ',' )
-					depthCounts = [ int( val ) for val in depthValues ]
-				except:
-					genotypeArray.append( 'NC' )
-					continue
+				if not args.noFilter:
+					try:
+						depthValues = sampleValues[DP_AD_ndx].split( ',' )
+						depthCounts = [ int( val ) for val in depthValues ]
+					except:
+						genotypeArray.append( 'NC' )
+						continue
 				
-				if sum( depthCounts ) >= args.minDepth:
+				if args.noFilter or sum( depthCounts ) >= args.minDepth:
 					keepSampleCount += 1
 					genotypeArray.append( genotype_conversion( genotype ) )
 				else:
