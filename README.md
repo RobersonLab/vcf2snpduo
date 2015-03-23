@@ -17,7 +17,12 @@ Filter by DP
 python vcf2snpduo.py --minDepth 20 --minSampleCount 4 --filterDP myInput.vcf 1>custom_duo_format.csv 2>duo.log
 ```
 
-**Important note** The depth filtering for this tool uses the *individual* level data, i.e. the DP field in INFO for all samples at a site is not used. Not all VCF files have allele depth (AD) and depth (DP) per sample, so choose whichever your sample has.
+No depth filter
+```bash
+python vcf2snpduo.py --noDepthFilter myInput.vcf 1>custom_duo_format.csv 2>duo.log
+```
+
+**Important note** The depth filtering for this tool uses the *individual* level data, i.e. the DP field in INFO for all samples at a site is not used. Not all VCF files have both allele depth (AD) and depth (DP) per sample, so choose based on your file format. If neither are present or depth filtering is not requested, use the `--noDepthFilter` option.
 
 ### Running in SNPduo
 Follow instructions for the SNPduo repository if you aren't running the tool via the [Pevsner lab](http://pevsnerlab.kennedykrieger.org/SNPduo/) web-interface. Choose CSV delimiting character and Custom Data Format.
